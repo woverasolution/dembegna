@@ -4,13 +4,24 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev:api": "pnpm --filter @dembegna/api dev",
+    "dev:customer": "pnpm --filter @dembegna/customer-frontend dev",
+    "dev:admin": "pnpm --filter @dembegna/admin-pwa dev -p 3002",
+    "dev": "concurrently \"pnpm:dev:api\" \"pnpm:dev:customer\" \"pnpm:dev:admin\"",
+    "build:shared": "pnpm --filter @dembegna/shared-types build",
+    "build:api": "pnpm --filter @dembegna/api build",
+    "build:customer": "pnpm --filter @dembegna/customer-frontend build",
+    "build:admin": "pnpm --filter @dembegna/admin-pwa build",
+    "build": "pnpm build:shared && pnpm -r --parallel --filter \"./apps/*\" build",
+    "lint": "pnpm -r lint", 
+    "format": "prettier --write . --ignore-path ./.gitignore"
+
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "packageManager": "pnpm@10.6.4",
   "devDependencies": {
-    "@types/next-pwa": "^5.6.9"
+    "concurrently": "^8.2.2"
   }
 }

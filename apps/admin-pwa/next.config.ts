@@ -1,6 +1,14 @@
-import withPWA from 'next-pwa';
+/* eslint-disable @typescript-eslint/no-require-imports */
+
+import withSerwistInit from "@serwist/next";
 
 // apps/admin-pwa/next.config.js
+const withSerwist = withSerwistInit({
+  swSrc: "src/sw.ts",
+  swDest: "public/sw.js",
+});
+
+/** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
   // Add other Next.js configurations if needed
@@ -8,9 +16,4 @@ const nextConfig = {
   // (Note: `devServer` is not a standard Next.js config. Port is usually set via CLI: `next dev -p 3002`)
 };
 
-export default withPWA({
-  dest: 'public', // Destination directory for PWA files
-  register: true, // Register the service worker
-  skipWaiting: true, // Install new service worker on activate
-  disable: process.env.NODE_ENV === 'development', // Optionally disable PWA in dev
-})(nextConfig);
+export default withSerwist(nextConfig);
