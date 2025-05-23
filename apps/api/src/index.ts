@@ -4,6 +4,7 @@ import pool = require('./config/db'); // Changed to import = require()
 // import { DembegnaUser } from '@dembegna/shared-types'; // Will work after linking
 
 import authRoutes from './modules/auth/auth.routes'; // Import auth routes
+import customerRoutes from './modules/customers/customers.routes'; // Import customer routes
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -16,6 +17,9 @@ app.get('/api/health', (req, res) => {
 
 // Register auth routes
 app.use('/api/auth', authRoutes);
+
+// Register customer routes
+app.use('/api/customers', customerRoutes);
 
 // New route for DB test
 app.get('/api/db-test', async (req, res) => {
