@@ -3,7 +3,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import * as z from "zod";
+import { signUpSchema, type SignUpData } from "@dembegna/shared-types";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -20,31 +20,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 // To use toast notifications, ensure Toaster is in your layout.tsx
 // import { toast } from "@/components/ui/use-toast"; 
 
-// 1. Define your form schema with Zod
-// Basic Ethiopian phone number regex - can be improved for more strictness or international numbers if needed
-const phoneRegex = new RegExp(
-  /^([+]?251[-.\s]?)?(0?9)\d{8}$/ // Matches +2519... or 09...
-); 
-
-const formSchema = z.object({
-  name: z.string().min(2, {
-    message: "Please enter a name with at least 2 characters.",
-  }).max(100, { message: "Name seems a bit long, try a shorter version?"}),
-  phoneNumber: z.string().regex(phoneRegex, {
-    message: "Please enter a valid Ethiopian phone number (e.g., 0911223344 or +251911223344).",
-  }),
-  // Making SMS consent truly optional by not using .refine to check for true,
-  // but you can add specific handling in onSubmit if needed, or keep it mandatory as before.
-  // For marketable V1, mandatory consent for program communication is common.
-  // Let's make it mandatory as per original thought for program function.
-  smsConsent: z.boolean().refine(value => value === true, {
-    message: "To join our loyalty program, please agree to receive SMS updates."
-  }),
-});
-
 export default function SignUpPage() {
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<SignUpData>({
+    resolver: zodResolver(signUpSchema),
     defaultValues: {
       name: "",
       phoneNumber: "",
@@ -52,24 +30,35 @@ export default function SignUpPage() {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    // V1: Log values. Later: API call to /api/customers/signup
-    console.log("Dembegna Loyalty Sign-Up:", values);
-    
-    // Example: Use shadcn toast for feedback (ensure <Toaster /> is in layout.tsx)
-    // toast({
-    //   title: "Welcome to Dembegna Loyalty!",
-    //   description: (
-    //     <div className="mt-2">
-    //       <p>Name: {values.name}</p>
-    //       <p>Phone: {values.phoneNumber}</p>
-    //       <p>We'll send your digital card details shortly!</p>
-    //     </div>
-    //   ),
-    // });
+  async function onSubmit(values: SignUpData) {
+    console.log("Dembegna Loyalty Sign-Up Attempt:", values);
+    try {
+      const response = await fetch('/api/auth/signup', { // Assuming API is on the same domain or proxied
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(values),
+      });
 
-    alert(`Welcome, ${values.name}!\nSign-up successful (check console for details).\nWe'll send your digital card and updates to ${values.phoneNumber}.`);
-    form.reset(); // Reset form after successful submission
+      const result = await response.json();
+
+      if (response.ok) {
+        console.log("Sign-up successful:", result);
+        alert(`Welcome, ${values.name}! ${result.message}\nWe'll send your digital card and updates to ${values.phoneNumber}.`);
+        form.reset();
+      } else {
+        console.error("Sign-up failed:", result);
+        const errorMessage = result.message || "Sign-up failed. Please try again.";
+        // Define a type for the expected error objects from the API
+        type ApiErrorDetail = { path: string; message: string };
+        const errorDetails = result.errors ? (result.errors as ApiErrorDetail[]).map((e: ApiErrorDetail) => `${e.path}: ${e.message}`).join("\n") : "";
+        alert(`Error: ${errorMessage}\n${errorDetails}`);
+      }
+    } catch (error) {
+      console.error("An unexpected error occurred:", error);
+      alert("An unexpected error occurred. Please check the console and try again.");
+    }
   }
 
   return (

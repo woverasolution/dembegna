@@ -3,12 +3,19 @@ import express from 'express';
 import pool = require('./config/db'); // Changed to import = require()
 // import { DembegnaUser } from '@dembegna/shared-types'; // Will work after linking
 
+import authRoutes from './modules/auth/auth.routes'; // Import auth routes
+
 const app = express();
 const PORT = process.env.PORT || 3001;
+
+app.use(express.json()); // Middleware to parse JSON bodies
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'Dembegna API is healthy' });
 });
+
+// Register auth routes
+app.use('/api/auth', authRoutes);
 
 // New route for DB test
 app.get('/api/db-test', async (req, res) => {

@@ -81,6 +81,9 @@ importers:
       pg:
         specifier: ^8.16.0
         version: 8.16.0
+      zod:
+        specifier: ^3.25.27
+        version: 3.25.27
     devDependencies:
       '@types/express':
         specifier: ^4.17.13
@@ -174,7 +177,15 @@ importers:
         specifier: ^5
         version: 5.8.3
 
-  packages/shared-types: {}
+  packages/shared-types:
+    dependencies:
+      zod:
+        specifier: ^3.25.27
+        version: 3.25.27
+    devDependencies:
+      typescript:
+        specifier: ^5.8.3
+        version: 5.8.3
 
 packages:
 
