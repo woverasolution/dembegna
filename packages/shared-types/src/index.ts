@@ -24,4 +24,10 @@ export interface DembegnaUser { // Renamed from User to be more specific
     created_at: string | Date;
     updated_at: string | Date;
   }
+
+  export interface AdminLoginResponse {
+    token: string;
+    user: Omit<AdminUser, "is_active" | "created_at" | "updated_at">; // Or more precisely match the backend's Omit
+  }
+
 export * from "./auth-schemas.js";

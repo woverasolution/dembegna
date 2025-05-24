@@ -11,6 +11,14 @@ const withSerwist = withSerwistInit({
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  async rewrites() {
+    return [
+      {
+        source: "/api/:path*",
+        destination: "http://localhost:3001/api/:path*", // Proxy to Backend
+      },
+    ];
+  },
   // Add other Next.js configurations if needed
   // If you want to run admin dev server on a different port:
   // (Note: `devServer` is not a standard Next.js config. Port is usually set via CLI: `next dev -p 3002`)

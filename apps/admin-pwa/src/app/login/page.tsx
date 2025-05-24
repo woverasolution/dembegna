@@ -17,6 +17,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { loginAdmin } from "../../lib/auth"; // Adjusted import path
+import type { LoginAdminData } from "@dembegna/shared-types"; // Import the type for credentials
 // Ensure Toaster is in apps/admin-pwa/src/app/layout.tsx
 
 const formSchema = z.object({
@@ -29,7 +31,7 @@ const formSchema = z.object({
 export default function AdminLoginPage() {
   const router = useRouter();
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<LoginAdminData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       username: "",
@@ -37,41 +39,29 @@ export default function AdminLoginPage() {
     },
   });
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: LoginAdminData) {
     try {
-      const response = await fetch('/api/proxy/admin/auth/login', { // Using the proxy
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(values),
-      });
+      const result = await loginAdmin(values);
+      console.log("Data returned from loginAdmin service:", result);
 
-      const result = await response.json();
-
-      if (!response.ok || !result.success) {
-        toast.error("Login Failed", { // Updated to sonner API
-          description: result.message || "Invalid username or password.",
-        });
-        return;
-      }
-
-      if (result.data && result.data.token) {
-        localStorage.setItem('adminAuthToken', result.data.token);
-        if (result.data.user) {
-          localStorage.setItem('adminUser', JSON.stringify(result.data.user));
+      if (result.token) {
+        localStorage.setItem('adminAuthToken', result.token);
+        if (result.user) {
+          localStorage.setItem('adminUser', JSON.stringify(result.user));
         }
-        toast.success("Login Successful!", { // Updated to sonner API
-          description: `Welcome back, ${result.data.user?.name || result.data.user?.username || 'Admin'}!`,
+        toast.success("Login Successful!", {
+          description: `Welcome back, ${result.user?.name || result.user?.username || 'Admin'}!`,
         });
         router.push('/admin/dashboard'); // Or your main admin route
       } else {
+        // This case should ideally not be reached if loginAdmin throws an error for non-token responses
         throw new Error("Authentication token not found in response.");
       }
     } catch (error) {
       console.error("Admin Login request error:", error);
-      toast.error("Login Error", { // Updated to sonner API
-        description: "An unexpected error occurred. Please try again later.",
+      const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred.";
+      toast.error("Login Error", {
+        description: errorMessage,
       });
     }
   }
