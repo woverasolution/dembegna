@@ -16,5 +16,12 @@ export interface DembegnaUser { // Renamed from User to be more specific
     message?: string;
     error?: string;
   }
-
+  export interface AdminUser {
+    id: string; 
+    username: string;
+    name?: string | null; 
+    is_active: boolean;
+    created_at: string | Date;
+    updated_at: string | Date;
+  }
 export * from "./auth-schemas.js";

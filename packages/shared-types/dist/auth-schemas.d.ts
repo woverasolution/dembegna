@@ -13,3 +13,14 @@ export declare const signUpSchema: z.ZodObject<{
     smsConsent: boolean;
 }>;
 export type SignUpData = z.infer<typeof signUpSchema>;
+export declare const loginAdminSchema: z.ZodObject<{
+    username: z.ZodString;
+    password: z.ZodString;
+}, "strip", z.ZodTypeAny, {
+    username: string;
+    password: string;
+}, {
+    username: string;
+    password: string;
+}>;
+export type LoginAdminData = z.infer<typeof loginAdminSchema>;

@@ -1,6 +1,8 @@
 // apps/api/src/index.ts
 import express from 'express';
 import pool = require('./config/db'); // Changed to import = require()
+import * as dotenv from 'dotenv';
+dotenv.config();
 // import { DembegnaUser } from '@dembegna/shared-types'; // Will work after linking
 
 import authRoutes from './modules/auth/auth.routes'; // Import auth routes
@@ -12,14 +14,14 @@ const PORT = process.env.PORT || 3001;
 app.use(express.json()); // Middleware to parse JSON bodies
 
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'Dembegna API is healthy' });
+  res.json({ status: 'Dembegna API is healthy and running!' });
 });
 
 // Register auth routes
-app.use('/api/auth', authRoutes);
+app.use('/api/v1/auth', authRoutes);
 
 // Register customer routes
-app.use('/api/customers', customerRoutes);
+app.use('/api/v1/customers', customerRoutes);
 
 // New route for DB test
 app.get('/api/db-test', async (req, res) => {
@@ -34,6 +36,4 @@ app.get('/api/db-test', async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`Dembegna API server listening on port ${PORT}`);
-});
+export default app;

@@ -1,7 +1,8 @@
 import { Request, Response } from 'express';
-import { signUpSchema, SignUpData } from '@dembegna/shared-types';
+import { signUpSchema, SignUpData, LoginAdminData, loginAdminSchema } from '@dembegna/shared-types';
 import { ZodError } from 'zod';
 import { createCustomerService } from '../customers/customers.service';
+import { loginAdminService, AuthError } from './auth.service';
 
 export const signUpController = async (req: Request, res: Response) => {
   try {
@@ -42,6 +43,50 @@ export const signUpController = async (req: Request, res: Response) => {
     res.status(500).json({
       success: false,
       message: 'Internal server error during signup.',
+      error: error.message,
+    });
+  }
+};
+
+// New Admin Login Controller
+export const loginAdminController = async (req: Request, res: Response) => {
+  try {
+    // Validate request body against Zod schema for admin login
+    const { username, password }: LoginAdminData = loginAdminSchema.parse(req.body);
+
+    const { token, user } = await loginAdminService(username, password);
+
+    res.status(200).json({
+      success: true,
+      message: 'Admin login successful.',
+      data: { token, user },
+    });
+
+  } catch (error: any) {
+    if (error instanceof ZodError) {
+      console.error('Validation error during admin login:', error.issues);
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid input data for admin login.',
+        errors: error.issues.map(issue => ({ 
+          path: issue.path.join('.'), 
+          message: issue.message 
+        })),
+      });
+    } 
+    
+    if (error instanceof AuthError) {
+      console.warn(`AuthError during admin login for user ${req.body.username || 'unknown'}: ${error.message}`);
+      return res.status(error.statusCode).json({
+        success: false,
+        message: error.message,
+      });
+    }
+
+    console.error('Error in loginAdminController:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error during admin login.',
       error: error.message,
     });
   }
