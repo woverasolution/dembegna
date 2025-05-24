@@ -1,59 +1,22 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { LayoutDashboard, LogOut, Users, Gift, ScanLine, QrCode, Award, PlusCircle } from 'lucide-react'; 
-import type { AdminUser } from '@dembegna/shared-types';
-
-// Define a more specific type for the user data we expect from localStorage
-type StoredAdminUser = Pick<AdminUser, "username"> & Partial<Pick<AdminUser, "name">>;
+import { useAuth } from '../../contexts/AuthContext';
 
 export default function AdminDashboardPage() {
   const router = useRouter();
-  const [adminUser, setAdminUser] = useState<StoredAdminUser | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { user, isAuthenticated, isLoading, logout } = useAuth();
 
   useEffect(() => {
-    const token = localStorage.getItem('adminAuthToken');
-    if (!token) {
+    if (!isLoading && !isAuthenticated) {
       router.replace('/login'); 
-    } else {
-      const userDataString = localStorage.getItem('adminUser');
-      if (userDataString) {
-        try {
-          const parsedUser: StoredAdminUser = JSON.parse(userDataString);
-          setAdminUser(parsedUser);
-        } catch (e) {
-          console.error("Failed to parse admin user data from localStorage", e);
-          // Clear potentially corrupted data and redirect to login
-          localStorage.removeItem('adminUser');
-          localStorage.removeItem('adminAuthToken');
-          router.replace('/login');
-          return; // Exit early after redirect
-        }
-      } else {
-        // If no user data but token exists, it might be an old session or incomplete login
-        // For now, we'll treat this as needing re-authentication
-        console.warn("Admin auth token found, but no user data in localStorage. Redirecting to login.");
-        localStorage.removeItem('adminAuthToken'); // Clear token to ensure clean login
-        router.replace('/login');
-        return; // Exit early
-      }
-      setIsLoading(false);
-      // In a real app, you might also want to verify the token with the backend here
-      // especially if the token has a short expiry and needs refreshing,
-      // or to ensure the user account is still active.
     }
-  }, [router]);
+  }, [isLoading, isAuthenticated, router]);
 
-  const handleLogout = () => {
-    localStorage.removeItem('adminAuthToken');
-    localStorage.removeItem('adminUser');
-    router.push('/login'); // Use push for clearer navigation history, replace can be used too
-  };
-
-  if (isLoading) {
+  if (isLoading || (!isAuthenticated && !isLoading) ) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 text-white">
         <p className="text-xl animate-pulse">Loading Dembegna Admin Dashboard...</p>
@@ -61,10 +24,12 @@ export default function AdminDashboardPage() {
     );
   }
   
-  // This check helps prevent rendering if user data isn't set yet post-loading & pre-redirect.
-  // Or if the redirect from useEffect hasn't completed yet.
-  if (!adminUser) {
-    return null; 
+  if (!user) {
+    return (
+       <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 text-white">
+        <p className="text-xl">No user data. Redirecting to login...</p>
+      </div>
+    );
   }
 
   return (
@@ -76,7 +41,7 @@ export default function AdminDashboardPage() {
           <p className="text-xs text-slate-400 mt-1">Admin Panel</p>
         </div>
         <nav className="flex-grow space-y-2">
-            <a href="/admin/dashboard" className="flex items-center p-3 text-slate-100 bg-gradient-to-r from-sky-500/20 via-blue-500/20 to-indigo-500/20 border border-sky-500/50 rounded-lg transition-all duration-200 ease-in-out hover:shadow-lg hover:border-sky-400">
+            <a href="/dashboard" className="flex items-center p-3 text-slate-100 bg-gradient-to-r from-sky-500/20 via-blue-500/20 to-indigo-500/20 border border-sky-500/50 rounded-lg transition-all duration-200 ease-in-out hover:shadow-lg hover:border-sky-400">
               <LayoutDashboard className="h-5 w-5 mr-3 text-sky-300" />
               Dashboard
             </a>
@@ -92,11 +57,10 @@ export default function AdminDashboardPage() {
               <ScanLine className="h-5 w-5 mr-3 text-sky-400 group-hover:text-sky-300 transition-colors" />
               Pass Scanner
             </a>
-          {/* Add more navigation items here as features are built */}
         </nav>
         <div className="pt-4 border-t border-slate-700/60">
           <Button 
-            onClick={handleLogout} 
+            onClick={logout}
             variant="ghost" 
             className="w-full justify-start text-slate-300 hover:bg-red-600/70 hover:text-red-200 transition-all duration-200 ease-in-out group p-3"
           >
@@ -114,11 +78,11 @@ export default function AdminDashboardPage() {
               Admin Dashboard
             </h1>
             <p className="text-slate-400 text-sm md:text-base">
-              Welcome back, {adminUser.name || adminUser.username}!
+              Welcome back, {user.name || user.username}!
             </p>
           </div>
           <Button 
-            onClick={handleLogout} 
+            onClick={logout}
             variant="outline" 
             className="md:hidden bg-slate-700/50 border-slate-600 text-slate-300 hover:bg-red-600/70 hover:text-red-200 transition-colors duration-200 ease-in-out self-start"
           >
