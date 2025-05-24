@@ -10,14 +10,6 @@ import ProtectedRoute from '../../components/auth/ProtectedRoute';
 export default function AdminDashboardPage() {
   const { user, logout } = useAuth();
 
-  if (!user) {
-    return (
-        <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 text-white">
-            <p className="text-xl animate-pulse">Verifying user session...</p>
-        </div>
-    );
-  }
-
   return (
     <ProtectedRoute>
       <div className="flex min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 text-white selection:bg-blue-500 selection:text-white">
@@ -65,7 +57,7 @@ export default function AdminDashboardPage() {
                 Admin Dashboard
               </h1>
               <p className="text-slate-400 text-sm md:text-base">
-                Welcome back, {user.name || user.username}!
+                Welcome back, {user?.name || user?.username}!
               </p>
             </div>
             <Button 
