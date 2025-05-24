@@ -33,7 +33,8 @@ export default function SignUpPage() {
   async function onSubmit(values: SignUpData) {
     console.log("Dembegna Loyalty Sign-Up Attempt:", values);
     try {
-      const response = await fetch('/api/auth/signup', { // Assuming API is on the same domain or proxied
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001';
+      const response = await fetch(`${apiBaseUrl}/api/v1/auth/signup`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

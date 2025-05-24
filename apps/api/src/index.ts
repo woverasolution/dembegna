@@ -2,6 +2,7 @@
 import express from 'express';
 import pool = require('./config/db'); // Changed to import = require()
 import * as dotenv from 'dotenv';
+import cors from 'cors';
 dotenv.config();
 // import { DembegnaUser } from '@dembegna/shared-types'; // Will work after linking
 
@@ -10,6 +11,14 @@ import customerRoutes from './modules/customers/customers.routes'; // Import cus
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+
+// CORS Configuration
+const customerFrontendUrl = process.env.CUSTOMER_FRONTEND_URL || 'http://localhost:3000';
+const corsOptions = {
+  origin: customerFrontendUrl,
+  optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
+};
+app.use(cors(corsOptions));
 
 app.use(express.json()); // Middleware to parse JSON bodies
 
